@@ -28,8 +28,8 @@
     
     # Install runtime dependencies (lightweight)
     RUN apt-get update && apt-get install -y \
-        libffi7 \
-        libssl1.1 \
+        libffi8 \
+        libssl3 \
         libstdc++6 \
         && rm -rf /var/lib/apt/lists/*
     
