@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from typing import List
 
 import uvicorn
-from utils import add_files_to_tables
+from utils import add_data_to_tables
 
 app = FastAPI()
 
@@ -11,18 +11,28 @@ class FilePayload(BaseModel):
     table_name: str
     file_path: str
 
-@app.post("/add_files")
-async def add_files(payload: List[FilePayload]):
-    table_map = {}
-    for item in payload:
-        if item.table_name in table_map:
-            table_map[item.table_name].append(item.file_path)
-        else:
-            table_map[item.table_name] = [item.file_path]
-
+@app.post(
+    "/add_data",
+    responses={
+        200: {
+            "description": "Files successfully added to Iceberg tables."
+        },
+        422: {
+            "description": "Validation Error. The payload structure is incorrect."
+        },
+        500: {
+            "description": "Internal Server Error. Failed to process or insert files.",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Error message here"}
+                }
+            }
+        },
+    }
+)
+async def add_files(payload: FilePayload):
     try:
-        add_files_to_tables(table_map)
-        return {"status": "success", "message": "Files added to tables."}
+        add_data_to_tables(payload.table_name,payload.file_path)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
